@@ -7,8 +7,9 @@ repeated runs only add rows that aren't already in the sheet.
 
 Search criteria (edit via flags on `fetch_vibe_leads.py` if you want
 something different): VP/Director of Marketing or Business Development,
-at SaaS companies (`linkedin_category: software development`) in the
-US/CA, that had a new funding round in the last 90 days.
+at SaaS companies (`linkedin_category: software development`) with
+50-500 employees, in the US/CA, that had a new funding round in the
+last 90 days.
 
 ## How it works
 
@@ -82,12 +83,18 @@ python fetch_vibe_leads.py \
   --countries US CA \
   --linkedin-categories "software development" \
   --funding-window-days 90 \
+  --company-sizes 51-200 201-500 \
   --job-levels director "vice president" \
   --job-titles "Business Development" "Marketing" \
-  --max-businesses 200 \
+  --max-businesses 10 \
   --max-prospects 100 \
   --out vibe_leads.csv
 ```
+
+`--company-sizes` must use Explorium's fixed buckets: `1-10`, `11-50`,
+`51-200`, `201-500`, `501-1000`, `1001-5000`, `5001-10000`, `10001+`.
+There's no free-form range, so `51-200 201-500` is the closest fit to
+"50-300 employees".
 
 ## Scheduling
 

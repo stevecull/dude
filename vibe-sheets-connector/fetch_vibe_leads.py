@@ -49,7 +49,7 @@ def _format_error(response):
     return str(payload)
 
 
-def fetch_saas_businesses_with_funding(api_key, countries, linkedin_categories, funding_window_days, size):
+def fetch_saas_businesses_with_funding(api_key, countries, linkedin_categories, funding_window_days, company_sizes, size):
     body = {
         "mode": "full",
         "size": size,
@@ -59,6 +59,7 @@ def fetch_saas_businesses_with_funding(api_key, countries, linkedin_categories, 
             "country_code": {"values": countries},
             "linkedin_category": {"values": linkedin_categories},
             "events": {"values": ["new_funding_round"], "last_occurrence": funding_window_days},
+            "company_size": {"values": company_sizes},
         },
     }
     return _post("businesses", api_key, body).get("data", [])
@@ -104,6 +105,12 @@ def parse_args():
     parser.add_argument("--countries", nargs="+", default=["US", "CA"])
     parser.add_argument("--linkedin-categories", nargs="+", default=["software development"])
     parser.add_argument("--funding-window-days", type=int, default=90)
+    parser.add_argument(
+        "--company-sizes",
+        nargs="+",
+        default=["51-200", "201-500"],
+        help="Explorium company_size buckets (e.g. 51-200 201-500) - fixed enum, no free-form ranges.",
+    )
     parser.add_argument("--job-levels", nargs="+", default=["director", "vice president"])
     parser.add_argument("--job-titles", nargs="+", default=["Business Development", "Marketing"])
     parser.add_argument("--max-businesses", type=int, default=200, help="Max matching businesses to scope prospects to.")
@@ -119,7 +126,8 @@ def main():
     args = parse_args()
 
     businesses = fetch_saas_businesses_with_funding(
-        args.api_key, args.countries, args.linkedin_categories, args.funding_window_days, args.max_businesses,
+        args.api_key, args.countries, args.linkedin_categories, args.funding_window_days,
+        args.company_sizes, args.max_businesses,
     )
     business_ids = [b["business_id"] for b in businesses if b.get("business_id")]
     print(f"Found {len(business_ids)} matching businesses.", file=sys.stderr)
