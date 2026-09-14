@@ -22,24 +22,45 @@ access to Vibe itself. Safe to re-run: rows are deduped by a key column
    pip install -r requirements.txt
    ```
 
-2. Create a Google Cloud service account with the Sheets API enabled, and
-   download its JSON key.
-3. Share the target Google Sheet with the service account's
-   `client_email` (found in the JSON key) as an **Editor**.
-4. Copy `.env.example` to `.env` and fill in the values, then export them
+2. Authenticate with Google — two options:
+
+   **Option A: gcloud Application Default Credentials (simplest for personal use)**
+
+   ```bash
+   gcloud auth application-default login \
+     --scopes=https://www.googleapis.com/auth/spreadsheets
+   ```
+
+   This uses your own Google account, so you don't need to share the sheet
+   with anything extra — just make sure the account you log in with already
+   has edit access to the target sheet. Leave `--credentials` /
+   `GOOGLE_APPLICATION_CREDENTIALS` unset when running the connector.
+
+   **Option B: service account (better for unattended/scheduled runs)**
+
+   Create a Google Cloud service account with the Sheets API enabled,
+   download its JSON key, and share the target Google Sheet with the
+   service account's `client_email` (found in the JSON key) as an
+   **Editor**. Pass the key path via `--credentials` /
+   `GOOGLE_APPLICATION_CREDENTIALS`.
+
+3. Copy `.env.example` to `.env` and fill in the values, then export them
    into your shell (e.g. `set -a; source .env; set +a`) or pass the
    equivalent CLI flags.
 
 ## Usage
+
+With gcloud ADC (Option A):
 
 ```bash
 python connector.py \
   --source "https://.../vibe-export.csv" \
   --spreadsheet-id "1AbCDefGhiJklMnoPqrStuVwxYz..." \
   --sheet-name "Vibe Prospects" \
-  --credentials "./service-account.json" \
   --key-column prospect_id
 ```
+
+With a service account key (Option B), add `--credentials "./service-account.json"`.
 
 All flags can instead be set via environment variables (see
 `.env.example`): `VIBE_EXPORT_SOURCE`, `GOOGLE_SHEET_ID`,

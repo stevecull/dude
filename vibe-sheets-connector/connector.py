@@ -13,6 +13,7 @@ import io
 import os
 import sys
 
+import google.auth
 import requests
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -32,7 +33,12 @@ def load_csv_rows(source):
 
 
 def get_sheets_service(credentials_path):
-    creds = service_account.Credentials.from_service_account_file(credentials_path, scopes=SCOPES)
+    """Auth via a service-account JSON key if given, else gcloud Application
+    Default Credentials (run `gcloud auth application-default login` first)."""
+    if credentials_path:
+        creds = service_account.Credentials.from_service_account_file(credentials_path, scopes=SCOPES)
+    else:
+        creds, _ = google.auth.default(scopes=SCOPES)
     return build("sheets", "v4", credentials=creds)
 
 
@@ -123,7 +129,11 @@ def parse_args():
     parser.add_argument(
         "--credentials",
         default=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS"),
-        help="Path to a Google service-account JSON key (env: GOOGLE_APPLICATION_CREDENTIALS).",
+        help=(
+            "Path to a Google service-account JSON key (env: GOOGLE_APPLICATION_CREDENTIALS). "
+            "Omit to use gcloud Application Default Credentials instead "
+            "(run `gcloud auth application-default login` first)."
+        ),
     )
     parser.add_argument(
         "--key-column",
@@ -137,7 +147,6 @@ def parse_args():
         for name, value in (
             ("--source/VIBE_EXPORT_SOURCE", args.source),
             ("--spreadsheet-id/GOOGLE_SHEET_ID", args.spreadsheet_id),
-            ("--credentials/GOOGLE_APPLICATION_CREDENTIALS", args.credentials),
         )
         if not value
     ]
