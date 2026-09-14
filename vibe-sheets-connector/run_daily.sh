@@ -13,5 +13,5 @@ fi
 mkdir -p runs
 LEADS_CSV="runs/leads_$(date +%Y-%m-%d).csv"
 
-python3 fetch_vibe_leads.py --out "$LEADS_CSV"
+python3 fetch_vibe_leads.py --out "$LEADS_CSV" --max-businesses 10 --max-prospects 100
 python3 connector.py --source "$LEADS_CSV" --key-column prospect_id
